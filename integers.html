@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Integer Arcade</title>
+<style>
+:root{--navy:#17365d;--blue:#2563eb;--green:#178647;--red:#c0392b;--gold:#a96300;--bg:#eef2f7;--ink:#17202a;--muted:#667085;--line:#cbd5e1}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(135deg,#e8edf5,#f8fafc);color:var(--ink)}
+header{background:var(--navy);color:white;padding:18px 24px} header h1{margin:0;font-size:clamp(28px,4vw,44px)} header p{margin:5px 0 0;color:#dbe7f7}
+main{max-width:1180px;margin:auto;padding:18px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:18px}
+.card{background:white;border:2px solid transparent;border-radius:16px;padding:18px;cursor:pointer;box-shadow:0 7px 18px #0001}.card.active{border-color:var(--blue)}
+.card h2{margin:0 0 6px}.card p{margin:0;color:var(--muted);line-height:1.4}
+.panel{background:white;border-radius:16px;padding:18px;box-shadow:0 8px 22px #0002}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}select,button{font:inherit;padding:10px 13px;border-radius:10px}
+select{border:1px solid var(--line);background:white}button{border:0;background:var(--blue);color:white;font-weight:750;cursor:pointer}button.alt{background:#64748b}button.gold{background:var(--gold)}
+.stats{margin-left:auto;display:flex;gap:18px;font-weight:750}.note{background:#fff8e7;border-left:6px solid #f4b942;padding:12px 14px;border-radius:10px;margin:14px 0;line-height:1.45}
+.hidden{display:none!important}.feedback{font-size:19px;font-weight:800;min-height:30px;margin-top:14px}.good{color:var(--green)}.bad{color:var(--red)}
+.target{text-align:center;background:#eef6ff;border-radius:14px;padding:14px;font-size:28px;font-weight:900;margin:12px 0}
+.big{font-size:clamp(46px,8vw,76px);font-weight:900;text-align:center;margin:20px 0}
+.buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}.choice{background:white;color:#17202a;border:3px solid #94a3b8;min-width:120px;font-size:25px}.choice:hover{border-color:var(--blue)}
+.warCards{display:flex;justify-content:center;gap:28px;align-items:center;flex-wrap:wrap;margin:24px 0}
+.intCard{width:150px;height:170px;background:white;border:4px solid #25364c;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:52px;font-weight:900;box-shadow:0 6px 14px #0002}
+.vs{font-size:28px;font-weight:900;color:#64748b}
+.numberline{position:relative;height:95px;margin:30px auto 15px;max-width:900px;padding:0 20px}
+.axis{position:absolute;left:25px;right:25px;top:40px;height:4px;background:#334155}
+.ticks{position:absolute;left:25px;right:25px;top:29px;display:flex;justify-content:space-between}
+.tick{width:2px;height:26px;background:#334155;position:relative}.tick span{position:absolute;top:31px;left:50%;transform:translateX(-50%);font-size:12px}
+.marker{position:absolute;top:19px;width:22px;height:22px;border-radius:50%;background:var(--blue);transform:translateX(-50%);z-index:4}
+.elevator{max-width:500px;margin:18px auto;border:3px solid #334155;border-radius:14px;overflow:hidden;background:#f8fafc}
+.floor{height:42px;border-bottom:1px solid #cbd5e1;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-weight:800}.floor.active{background:#dbeafe}
+.zeroCards{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:18px 0}.zcard{width:78px;height:88px;border:3px solid #334155;border-radius:12px;background:white;font-size:28px;font-weight:900;cursor:pointer}.zcard.selected{outline:4px solid var(--blue)}
+.totalBox{max-width:600px;margin:16px auto;padding:14px;border-radius:12px;background:#f8fafc;text-align:center;font-size:25px;font-weight:900}
+@media(max-width:800px){.cards{grid-template-columns:1fr}.stats{margin-left:0}}
+
+.scoringModal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:9999}
+.scoringCard{background:white;border-radius:18px;padding:24px;max-width:560px;width:100%;box-shadow:0 12px 34px #0004}
+.scoringCard h2{margin-top:0;color:#17365d}.scoreGrid{display:grid;grid-template-columns:1fr auto;gap:8px 18px;margin:14px 0}
+.scoreGrid div{padding:7px 0;border-bottom:1px solid #e5e7eb}.scoreGrid .pts{font-weight:900;text-align:right}
+.levelBonus{background:#eef6ff;border-radius:10px;padding:12px;margin:14px 0;line-height:1.6}
+
+</style></head>
+<body>
+<header><h1>Integer Arcade</h1><p>Compare • Number Lines • Positive & Negative Numbers • Integer Reasoning</p></header>
+<main>
+<section class="cards">
+<div class="card active" data-game="war"><h2>Integer War</h2><p>Compare two integers and choose the greater number.</p></div>
+<div class="card" data-game="elevator"><h2>Elevator Challenge</h2><p>Move above and below zero to find the ending floor.</p></div>
+<div class="card" data-game="zero"><h2>Zero Showdown</h2><p>Combine positive and negative cards to get as close to zero as possible.</p></div>
+</section>
+<section class="panel">
+<div class="bar">
+<label><b>Level:</b> <select id="level"><option value="0">Level 1</option><option value="1">Level 2</option><option value="2">Level 3</option></select></label>
+<button id="new">New Round</button><button id="check">Check</button><button id="hint" class="gold">Hint</button><button id="reset" class="alt">Reset</button>
+<button id="scoringBtn" class="alt">Scoring</button><div class="stats"><span>Score: <span id="score">0</span></span><span>Rounds: <span id="rounds">0</span></span></div>
+</div>
+
+<div id="warGame">
+<div class="note"><b>Integer War:</b> Look at both integer cards. Choose the number that is greater. Remember: on a number line, numbers farther to the right are greater.</div>
+<div class="warCards"><div class="intCard" id="warA"></div><div class="vs">VS</div><div class="intCard" id="warB"></div></div>
+<div class="buttons"><button class="choice" id="chooseA"></button><button class="choice" id="equalBtn">=</button><button class="choice" id="chooseB"></button></div>
+<div id="warLine" class="numberline"></div>
+</div>
+
+<div id="elevatorGame" class="hidden">
+<div class="note"><b>Elevator Challenge:</b> Start on the given floor. Follow the UP or DOWN instruction. Decide which floor the elevator reaches.</div>
+<div id="elevPrompt" class="target"></div><div id="elevator" class="elevator"></div>
+<div class="buttons" id="elevChoices"></div>
+</div>
+
+<div id="zeroGame" class="hidden">
+<div class="note"><b>Zero Showdown:</b> Select the required number of cards. Add the integers together. Try to make a total as close to zero as possible.</div>
+<div id="zeroPrompt" class="target"></div><div id="zeroCards" class="zeroCards"></div><div id="zeroTotal" class="totalBox">Choose your cards.</div>
+</div>
+<div id="feedback" class="feedback"></div>
+</section>
+</main>
+
+<div id="scoringModal" class="scoringModal" onclick="if(event.target===this)closeScoring()">
+  <div class="scoringCard">
+    <h2>Arcade Scoring</h2>
+    <div class="scoreGrid">
+      <div><b>Perfect / Correct</b></div><div class="pts">10 points</div>
+      <div><b>Very Close</b> (strategy games)</div><div class="pts">8 points</div>
+      <div><b>Close</b> (strategy games)</div><div class="pts">5 points</div>
+      <div><b>Incorrect / Bust / Over Budget</b></div><div class="pts">0 points</div>
+    </div>
+    <div class="levelBonus"><b>Difficulty Bonus</b><br>
+      Level 1: +0 &nbsp;&nbsp; Level 2: +2 &nbsp;&nbsp; Level 3: +5<br>
+      <small>The bonus is added only when you earn base points.</small>
+    </div>
+    <button onclick="closeScoring()">Close</button>
+  </div>
+</div>
+
+<script>
+let game="war",level=0,score=0,rounds=0;const $=id=>document.getElementById(id),feed=$("feedback");
+
+function levelBonus(){return [0,2,5][level]||0}
+function award(basePoints,label){
+  if(basePoints<=0)return {total:0,bonus:0,text:`${label}: 0 points.`};
+  const bonus=levelBonus(), total=basePoints+bonus;
+  score+=total;
+  return {total,bonus,text:`${label}! ${basePoints} points + ${bonus} Level ${level+1} bonus = ${total} points.`};
+}
+function openScoring(){document.getElementById("scoringModal").style.display="flex"}
+function closeScoring(){document.getElementById("scoringModal").style.display="none"}
+
+function stats(){$("score").textContent=score;$("rounds").textContent=rounds}
+function fb(s,ok=null){feed.textContent=s;feed.className="feedback "+(ok===true?"good":ok===false?"bad":"")}
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+document.querySelectorAll(".card").forEach(c=>c.onclick=()=>{document.querySelectorAll(".card").forEach(x=>x.classList.remove("active"));c.classList.add("active");game=c.dataset.game;show();newRound()});
+function show(){["war","elevator","zero"].forEach(g=>$(g+"Game").classList.toggle("hidden",g!==game))}
+$("level").onchange=e=>{level=+e.target.value;newRound()};$("new").onclick=newRound;$("reset").onclick=newRound;
+$("check").onclick=()=>game==="war"?fb("Choose one of the comparison buttons."):game==="elevator"?fb("Choose an ending floor."):checkZero();
+$("hint").onclick=()=>game==="war"?hintWar():game==="elevator"?hintElevator():hintZero();
+
+/* INTEGER WAR */
+let wa=0,wb=0;
+function range(){return [5,10,20][level]}
+function loadWar(){let r=range();wa=rand(-r,r);wb=rand(-r,r);$("warA").textContent=showInt(wa);$("warB").textContent=showInt(wb);$("chooseA").textContent=showInt(wa);$("chooseB").textContent=showInt(wb);renderLine("warLine",r,[wa,wb])}
+function showInt(n){return n>0?"+"+n:String(n)}
+function chooseWar(v){rounds++;let correct=wa===wb?"eq":wa>wb?"a":"b";if(v===correct){let a=award(10,"Correct");fb(`The greater number is farther to the right on the number line. ${a.text}`,true)}else fb(`Not quite. ${showInt(Math.max(wa,wb))} is greater. 0 points.`,false);stats()}
+$("chooseA").onclick=()=>chooseWar("a");$("chooseB").onclick=()=>chooseWar("b");$("equalBtn").onclick=()=>chooseWar("eq");
+function hintWar(){fb(wa===wb?"Hint: Both numbers have the same value.":`Hint: Find ${showInt(wa)} and ${showInt(wb)} on the number line. The one farther right is greater.`)}
+function renderLine(id,r,marks=[]){let el=$(id);el.innerHTML='<div class="axis"></div><div class="ticks"></div>';let ticks=el.querySelector(".ticks"),step=level===2?5:level===1?2:1;for(let n=-r;n<=r;n+=step){let t=document.createElement("div");t.className="tick";t.innerHTML=`<span>${n}</span>`;ticks.appendChild(t)}marks.forEach(n=>{let m=document.createElement("div");m.className="marker";m.style.left=(25+((n+r)/(2*r))*(el.clientWidth-50))+"px";el.appendChild(m)})}
+
+/* ELEVATOR */
+let start=0,move=0,end=0;
+function loadElevator(){let r=range();start=rand(-Math.min(r,8),Math.min(r,8));let mag=rand(1,level===0?5:level===1?8:12);move=(Math.random()<.5?-1:1)*mag;end=start+move;if(end>10||end<-10){move=-move;end=start+move}$("elevPrompt").textContent=`Start on floor ${showInt(start)}. Move ${move>0?"UP":"DOWN"} ${Math.abs(move)} floors.`;renderElevator()}
+function renderElevator(){let e=$("elevator");e.innerHTML="";for(let n=10;n>=-10;n--){let f=document.createElement("div");f.className="floor"+(n===start?" active":"");f.innerHTML=`<span>Floor ${showInt(n)}</span>${n===start?"<span>START</span>":""}`;e.appendChild(f)}
+let choices=[end,end+rand(1,3),end-rand(1,3)];choices=[...new Set(choices)];while(choices.length<3)choices.push(end+choices.length+1);shuffle(choices);let b=$("elevChoices");b.innerHTML="";choices.forEach(n=>{let x=document.createElement("button");x.className="choice";x.textContent=showInt(n);x.onclick=()=>checkElevator(n);b.appendChild(x)})}
+function checkElevator(n){rounds++;if(n===end){let a=award(10,"Correct");fb(`You land on floor ${showInt(end)}. ${a.text}`,true)}else fb(`Try again. Start at ${showInt(start)} and move ${move>0?"up":"down"} ${Math.abs(move)}. 0 points.`,false);stats()}
+function hintElevator(){fb(`Hint: Start at ${showInt(start)}. ${move>0?"Move right/up":"Move left/down"} ${Math.abs(move)} spaces.`)}
+
+/* ZERO SHOWDOWN */
+let zCards=[],zSelected=[],zNeed=2;
+function loadZero(){zNeed=[2,3,4][level];zSelected=[];let r=range();zCards=Array.from({length:8},()=>{let n=0;while(n===0)n=rand(-r,r);return n});$("zeroPrompt").textContent=`Choose ${zNeed} cards. Get as close to 0 as possible.`;renderZero()}
+function renderZero(){let c=$("zeroCards");c.innerHTML="";zCards.forEach((n,i)=>{let b=document.createElement("button");b.className="zcard"+(zSelected.includes(i)?" selected":"");b.textContent=showInt(n);b.onclick=()=>{if(zSelected.includes(i))zSelected=zSelected.filter(x=>x!==i);else if(zSelected.length<zNeed)zSelected.push(i);renderZero()};c.appendChild(b)});let vals=zSelected.map(i=>zCards[i]);$("zeroTotal").textContent=vals.length?`${vals.map(showInt).join("  +  ")} = ${showInt(vals.reduce((a,b)=>a+b,0))}`:"Choose your cards."}
+function combos(arr,k,start=0,p=[],out=[]){if(p.length===k){out.push([...p]);return out}for(let i=start;i<arr.length;i++){p.push(arr[i]);combos(arr,k,i+1,p,out);p.pop()}return out}
+function checkZero(){if(zSelected.length!==zNeed)return fb(`Choose exactly ${zNeed} cards first.`,false);
+let total=zSelected.reduce((a,i)=>a+zCards[i],0),best=Math.min(...combos(zCards,zNeed).map(a=>Math.abs(a.reduce((x,y)=>x+y,0))));rounds++;
+let d=Math.abs(total),base=d===best?10:d<=best+2?8:d<=best+5?5:0;
+if(base>0){let a=award(base,base===10?"Perfect / Best Possible":base===8?"Very Close":"Close");fb(`Your total is ${showInt(total)}, ${d} from zero. ${a.text}`,true)}
+else fb(`Your total is ${showInt(total)}, ${d} from zero. 0 points.`,false);stats()}
+function hintZero(){let pos=zCards.filter(n=>n>0),neg=zCards.filter(n=>n<0);fb(pos.length&&neg.length?"Hint: Try pairing positive and negative numbers with similar sizes.":"Hint: Choose values whose total has the smallest distance from zero.")}
+
+function newRound(){level=+$("level").value;fb("");if(game==="war")loadWar();else if(game==="elevator")loadElevator();else loadZero()}
+show();newRound();stats();window.addEventListener("resize",()=>{if(game==="war")renderLine("warLine",range(),[wa,wb])});
+document.getElementById("scoringBtn").onclick=openScoring;
+</script></body></html>
