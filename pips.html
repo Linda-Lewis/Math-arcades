@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -52,8 +53,16 @@ button:hover{filter:brightness(.97)}
 .boardWrap{display:flex;justify-content:center;overflow:auto;padding:12px}
 #cageBoard{position:relative;display:grid;grid-template-columns:repeat(4,72px);grid-template-rows:repeat(4,72px)}
 .cell{width:72px;height:72px;border:1px solid #dbcfc8;background:#fffaf7}
-.cage{position:absolute;border:3px dashed;border-radius:9px;pointer-events:none;z-index:2}
-.cageLabel{position:absolute;left:5px;top:4px;font-size:11px;font-weight:800;z-index:3}
+.cage{position:absolute;border:3px dashed;border-radius:9px;pointer-events:none;z-index:2;overflow:visible}
+.cageLabel{
+position:absolute;z-index:20;min-width:30px;height:30px;padding:0 5px;
+display:flex;align-items:center;justify-content:center;
+font-size:11px;font-weight:900;line-height:1;color:white;
+background:#334155;border:3px solid white;border-radius:8px;
+box-shadow:0 2px 5px #0004;white-space:nowrap;pointer-events:none;
+transform:rotate(45deg);
+}
+.cageLabel>span{transform:rotate(-45deg);display:block}
 .cageDom{position:absolute;background:#fff;border:2.5px solid #222;border-radius:9px;z-index:5;display:flex;box-shadow:0 2px 5px #0002}
 .cageDom.h{width:136px;height:64px}.cageDom.v{width:64px;height:136px;flex-direction:column}
 .cageDom.h .half:first-child{border-right:2.5px solid #222}.cageDom.v .half:first-child{border-bottom:2.5px solid #222}
@@ -205,31 +214,62 @@ function hintLogic(){for(let i=0;i<logicLevels[level].zones.length;i++){let z=lo
 function sum(a){return a.reduce((x,y)=>x+y,0)} function allEq(a){return a.length&&a.every(x=>x===a[0])}
 const cageLevels=[
  {cages:[
-  {r:0,c:0,w:2,h:1,b:"#c98e78",f:"#efd0c4",label:"SUM 5",rule:v=>sum(v)===5},
-  {r:0,c:1,w:2,h:2,b:"#7b4db1",f:"#b58bd0",label:"ALL =",rule:v=>allEq(v)},
-  {r:0,c:3,w:1,h:3,b:"#e22670",f:"#f29ab1",label:"SUM 8",rule:v=>sum(v)===8},
-  {r:1,c:1,w:1,h:1,b:"#087d8d",f:"#76c4cc",label:"< 6",rule:v=>sum(v)<6},
-  {r:2,c:0,w:2,h:1,b:"#d95d00",f:"#f4b274",label:"< 4",rule:v=>sum(v)<4},
-  {r:3,c:0,w:2,h:1,b:"#365a9f",f:"#8fa5d6",label:"ALL =",rule:v=>allEq(v)}],tiles:[[1,1],[2,3],[0,2],[0,3],[2,5],[0,0],[3,6],[1,4]]},
+  {r:0,c:0,w:2,h:1,b:"#7b4db1",f:"#b58bd0",label:"5",kind:"sum",rule:v=>sum(v)===5},
+  {r:0,c:2,w:1,h:1,b:"#e22670",f:"#f29ab1",label:"4",kind:"single",rule:v=>v[0]===4},
+  {r:0,c:3,w:1,h:1,b:"#087d8d",f:"#76c4cc",label:"1",kind:"single",rule:v=>v[0]===1},
+  {r:1,c:0,w:1,h:1,b:"#d95d00",f:"#f4b274",label:"3",kind:"single",rule:v=>v[0]===3},
+  {r:1,c:1,w:2,h:1,b:"#365a9f",f:"#8fa5d6",label:"6",kind:"sum",rule:v=>sum(v)===6},
+  {r:1,c:3,w:1,h:1,b:"#6aa84f",f:"#b6d7a8",label:"2",kind:"single",rule:v=>v[0]===2},
+  {r:2,c:0,w:2,h:1,b:"#c98e78",f:"#efd0c4",label:"4",kind:"sum",rule:v=>sum(v)===4},
+  {r:2,c:2,w:2,h:1,b:"#8e44ad",f:"#d7bde2",label:"7",kind:"sum",rule:v=>sum(v)===7},
+  {r:3,c:0,w:1,h:1,b:"#2980b9",f:"#aed6f1",label:"0",kind:"single",rule:v=>v[0]===0},
+  {r:3,c:1,w:1,h:1,b:"#16a085",f:"#a3e4d7",label:"5",kind:"single",rule:v=>v[0]===5},
+  {r:3,c:2,w:2,h:1,b:"#b9770e",f:"#f9e79f",label:"8",kind:"sum",rule:v=>sum(v)===8}
+ ],tiles:[[2,3],[4,1],[3,2],[4,2],[1,3],[5,0],[3,5],[2,5]]},
+
  {cages:[
-  {r:0,c:0,w:1,h:2,b:"#087d8d",f:"#76c4cc",label:"SUM 4",rule:v=>sum(v)===4},
-  {r:0,c:1,w:2,h:1,b:"#7b4db1",f:"#b58bd0",label:"< 7",rule:v=>sum(v)<7},
-  {r:0,c:3,w:1,h:2,b:"#e22670",f:"#f29ab1",label:"> 5",rule:v=>sum(v)>5},
-  {r:2,c:0,w:2,h:1,b:"#d95d00",f:"#f4b274",label:"ALL =",rule:v=>allEq(v)},
-  {r:2,c:2,w:2,h:2,b:"#365a9f",f:"#8fa5d6",label:"SUM 12",rule:v=>sum(v)===12},
-  {r:3,c:0,w:2,h:1,b:"#c98e78",f:"#efd0c4",label:"< 6",rule:v=>sum(v)<6}],tiles:[[1,3],[2,2],[0,4],[3,3],[1,4],[2,4],[5,1],[0,2]]},
+  {r:0,c:0,w:2,h:1,b:"#7b4db1",f:"#b58bd0",label:"6",kind:"sum",rule:v=>sum(v)===6},
+  {r:0,c:2,w:2,h:1,b:"#e22670",f:"#f29ab1",label:"=",kind:"equal",rule:v=>allEq(v)},
+  {r:1,c:0,w:1,h:1,b:"#087d8d",f:"#76c4cc",label:"5",kind:"single",rule:v=>v[0]===5},
+  {r:1,c:1,w:1,h:1,b:"#d95d00",f:"#f4b274",label:"2",kind:"single",rule:v=>v[0]===2},
+  {r:1,c:2,w:2,h:1,b:"#365a9f",f:"#8fa5d6",label:"7",kind:"sum",rule:v=>sum(v)===7},
+  {r:2,c:0,w:2,h:1,b:"#c98e78",f:"#efd0c4",label:"=",kind:"equal",rule:v=>allEq(v)},
+  {r:2,c:2,w:1,h:1,b:"#6aa84f",f:"#b6d7a8",label:"4",kind:"single",rule:v=>v[0]===4},
+  {r:2,c:3,w:1,h:1,b:"#8e44ad",f:"#d7bde2",label:"1",kind:"single",rule:v=>v[0]===1},
+  {r:3,c:0,w:2,h:1,b:"#2980b9",f:"#aed6f1",label:"5",kind:"sum",rule:v=>sum(v)===5},
+  {r:3,c:2,w:2,h:1,b:"#16a085",f:"#a3e4d7",label:"=",kind:"equal",rule:v=>allEq(v)}
+ ],tiles:[[2,4],[3,3],[5,2],[3,4],[1,1],[4,4],[2,3],[2,2]]},
+
  {cages:[
-  {r:0,c:0,w:2,h:2,b:"#7b4db1",f:"#b58bd0",label:"SUM 10",rule:v=>sum(v)===10},
-  {r:0,c:2,w:2,h:1,b:"#c98e78",f:"#efd0c4",label:"ALL =",rule:v=>allEq(v)},
-  {r:1,c:2,w:1,h:2,b:"#087d8d",f:"#76c4cc",label:"< 5",rule:v=>sum(v)<5},
-  {r:1,c:3,w:1,h:2,b:"#e22670",f:"#f29ab1",label:"> 6",rule:v=>sum(v)>6},
-  {r:3,c:0,w:2,h:1,b:"#d95d00",f:"#f4b274",label:"SUM 7",rule:v=>sum(v)===7},
-  {r:3,c:2,w:2,h:1,b:"#365a9f",f:"#8fa5d6",label:"ALL =",rule:v=>allEq(v)}],tiles:[[2,3],[2,3],[1,1],[4,4],[0,2],[3,5],[1,6],[0,4]]}
+  {r:0,c:0,w:2,h:1,b:"#7b4db1",f:"#b58bd0",label:"7",kind:"sum",rule:v=>sum(v)===7},
+  {r:0,c:2,w:2,h:1,b:"#e22670",f:"#f29ab1",label:"=",kind:"equal",rule:v=>allEq(v)},
+  {r:1,c:0,w:1,h:1,b:"#087d8d",f:"#76c4cc",label:"6",kind:"single",rule:v=>v[0]===6},
+  {r:1,c:1,w:1,h:1,b:"#d95d00",f:"#f4b274",label:"2",kind:"single",rule:v=>v[0]===2},
+  {r:1,c:2,w:2,h:1,b:"#365a9f",f:"#8fa5d6",label:"> 6",kind:"gt",rule:v=>sum(v)>6},
+  {r:2,c:0,w:2,h:1,b:"#c98e78",f:"#efd0c4",label:"< 5",kind:"lt",rule:v=>sum(v)<5},
+  {r:2,c:2,w:1,h:1,b:"#6aa84f",f:"#b6d7a8",label:"4",kind:"single",rule:v=>v[0]===4},
+  {r:2,c:3,w:1,h:1,b:"#8e44ad",f:"#d7bde2",label:"1",kind:"single",rule:v=>v[0]===1},
+  {r:3,c:0,w:2,h:1,b:"#2980b9",f:"#aed6f1",label:"8",kind:"sum",rule:v=>sum(v)===8},
+  {r:3,c:2,w:2,h:1,b:"#16a085",f:"#a3e4d7",label:"=",kind:"equal",rule:v=>allEq(v)}
+ ],tiles:[[3,4],[5,5],[6,2],[4,3],[1,3],[4,1],[2,6],[2,2]]}
 ];
 let caTray=[],caPlaced=[],caSelected=null,caOrient="h";
 function loadCages(){score=0;moves=0;caPlaced=[];caSelected=null;caOrient="h";document.getElementById("rotateBtn").textContent="Rotate (Horizontal)";caTray=cageLevels[level].tiles.map((x,i)=>({id:"g"+i,a:x[0],b:x[1]}));renderCages();setStats();feedback("")}
 function renderCages(){let b=document.getElementById("cageBoard");b.innerHTML="";for(let r=0;r<4;r++)for(let c=0;c<4;c++){let x=document.createElement("div");x.className="cell";x.onclick=()=>placeCage(r,c);b.appendChild(x)}
-cageLevels[level].cages.forEach(cg=>{let d=document.createElement("div");d.className="cage";d.style.left=(cg.c*72+4)+"px";d.style.top=(cg.r*72+4)+"px";d.style.width=(cg.w*72-8)+"px";d.style.height=(cg.h*72-8)+"px";d.style.borderColor=cg.b;d.style.background=cg.f+"55";let l=document.createElement("div");l.className="cageLabel";l.textContent=cg.label;d.appendChild(l);b.appendChild(d)});
+cageLevels[level].cages.forEach(cg=>{
+ let d=document.createElement("div");d.className="cage";
+ d.style.left=(cg.c*72+4)+"px";d.style.top=(cg.r*72+4)+"px";
+ d.style.width=(cg.w*72-8)+"px";d.style.height=(cg.h*72-8)+"px";
+ d.style.borderColor=cg.b;d.style.background=cg.f+"55";
+ let l=document.createElement("div");l.className="cageLabel";l.style.background=cg.b;
+ let sp=document.createElement("span");sp.textContent=cg.label;l.appendChild(sp);
+ // Put the badge just outside a cage edge, never in the domino space.
+ // Alternate left/right edges to prevent neighboring badges from overlapping.
+ if(cg.c+cg.w>=4){l.style.right="-19px";l.style.top="6px";}
+ else if(cg.c===0){l.style.left="-19px";l.style.top="6px";}
+ else {l.style.right="-19px";l.style.bottom="6px";}
+ d.appendChild(l);b.appendChild(d)
+});
 caPlaced.forEach(p=>{let d=document.createElement("div");d.className="cageDom "+p.o;d.style.left=(p.c*72+4)+"px";d.style.top=(p.r*72+4)+"px";d.append(makeHalf(p.a),makeHalf(p.b));b.appendChild(d)});
 let tr=document.getElementById("cageTray");tr.innerHTML="";caTray.filter(t=>!caPlaced.some(p=>p.id===t.id)).forEach(t=>{let d=document.createElement("div");d.className="tile"+(caSelected===t.id?" selected":"");d.append(makeHalf(t.a),makeHalf(t.b));d.onclick=()=>{caSelected=t.id;renderCages()};tr.appendChild(d)})}
 function occ(p){return p.o==="h"?[[p.r,p.c],[p.r,p.c+1]]:[[p.r,p.c],[p.r+1,p.c]]}
@@ -238,7 +278,7 @@ function placeCage(r,c){if(caSelected===null)return feedback("Select a domino fi
 function cellVal(r,c){for(let p of caPlaced){let cells=occ(p);if(cells[0][0]===r&&cells[0][1]===c)return p.a;if(cells[1][0]===r&&cells[1][1]===c)return p.b}return null}
 function cageVals(cg){let v=[];for(let r=cg.r;r<cg.r+cg.h;r++)for(let c=cg.c;c<cg.c+cg.w;c++){let n=cellVal(r,c);if(n!==null)v.push(n)}return v}
 function checkCages(){moves++;if(caPlaced.length<8){setStats();return feedback("Place all 8 dominoes before checking.",false)}let all=true,fail=[];for(let cg of cageLevels[level].cages){let v=cageVals(cg);if(v.length!==cg.w*cg.h||!cg.rule(v)){all=false;fail.push(cg.label)}}if(all){let a=award(10,"Correct");feedback(`Puzzle solved! Every cage rule is true. ${a.text}`,true)}else feedback("Recheck: "+[...new Set(fail)].join(", ")+" — 0 points.",false);setStats()}
-function hintCages(){for(let cg of cageLevels[level].cages){let v=cageVals(cg);if(v.length===cg.w*cg.h&&!cg.rule(v))return feedback("Hint: Look again at the "+cg.label+" cage.")}feedback("Hint: Start with ALL = and exact SUM cages.")}
+function hintCages(){for(let cg of cageLevels[level].cages){let v=cageVals(cg);if(v.length===cg.w*cg.h&&!cg.rule(v))return feedback("Hint: Look again at the "+cg.label+" cage.")}feedback("Hint: Start with single-number cages, then two-square total cages and = cages.")}
 document.getElementById("rotateBtn").onclick=()=>{caOrient=caOrient==="h"?"v":"h";document.getElementById("rotateBtn").textContent="Rotate ("+(caOrient==="h"?"Horizontal":"Vertical")+")"};
 document.getElementById("undoBtn").onclick=()=>{caPlaced.pop();renderCages()};
 
