@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fluency & Estimation Arcade</title>
+<style>
+:root{--navy:#17365d;--blue:#2563eb;--green:#168447;--red:#c0392b;--gold:#a96300;--bg:#edf2f7;--ink:#17202a;--muted:#667085;--line:#cbd5e1}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(135deg,#e8edf5,#f8fafc);color:var(--ink)}
+header{background:var(--navy);color:#fff;padding:18px 24px}header h1{margin:0;font-size:clamp(28px,4vw,44px)}header p{margin:5px 0 0;color:#dbe7f7}
+main{max-width:1180px;margin:auto;padding:18px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:18px}
+.card{background:#fff;border:2px solid transparent;border-radius:16px;padding:18px;cursor:pointer;box-shadow:0 7px 18px #0001}.card.active{border-color:var(--blue)}
+.card h2{margin:0 0 6px}.card p{margin:0;color:var(--muted);line-height:1.4}.panel{background:#fff;border-radius:16px;padding:18px;box-shadow:0 8px 22px #0002}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}select,button{font:inherit;padding:10px 13px;border-radius:10px}
+select{border:1px solid var(--line);background:#fff}button{border:0;background:var(--blue);color:#fff;font-weight:750;cursor:pointer}button.alt{background:#64748b}button.gold{background:var(--gold)}
+.stats{margin-left:auto;display:flex;gap:18px;font-weight:750}.note{background:#fff8e7;border-left:6px solid #f4b942;padding:12px 14px;border-radius:10px;margin:14px 0;line-height:1.45}
+.hidden{display:none!important}.feedback{font-size:19px;font-weight:800;min-height:30px;margin-top:14px}.good{color:var(--green)}.bad{color:var(--red)}
+.target{text-align:center;background:#eef6ff;border-radius:14px;padding:14px;font-size:30px;font-weight:900;margin:12px 0}
+.number{text-align:center;font-size:clamp(50px,8vw,82px);font-weight:900;margin:18px 0}.buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.choice{background:#fff;color:#17202a;border:2px solid #94a3b8;min-width:120px;font-size:20px}.choice.selected{outline:4px solid var(--blue)}
+.hand{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:18px 0}.numcard{width:76px;height:88px;border:3px solid #1f2937;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;box-shadow:0 4px 9px #0002}
+.total{text-align:center;font-size:28px;font-weight:900;margin:12px}.meter{max-width:650px;height:28px;background:#e5e7eb;border-radius:20px;margin:16px auto;position:relative;overflow:hidden}.fill{height:100%;background:#94a3b8;width:0}
+.shop{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}.item{border:2px solid #cbd5e1;border-radius:12px;padding:14px;background:#fafcff;cursor:pointer;text-align:center}.item.selected{border-color:var(--blue);background:#eef6ff}.item .price{font-size:24px;font-weight:900}.item .name{font-weight:750;margin-bottom:6px}
+.receipt{max-width:520px;margin:12px auto;background:#f8fafc;border:1px solid #dbe3ec;border-radius:12px;padding:14px}.receiptRow{display:flex;justify-content:space-between;padding:5px 0}.receiptRow.totalrow{border-top:2px solid #94a3b8;margin-top:6px;padding-top:9px;font-weight:900}
+.estimateBox{display:flex;justify-content:center;gap:10px;align-items:center;flex-wrap:wrap;margin:15px}.estimateBox input{font:inherit;font-size:24px;width:150px;padding:10px;border:2px solid #94a3b8;border-radius:10px;text-align:center}
+@media(max-width:800px){.cards{grid-template-columns:1fr}.stats{margin-left:0}.shop{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.shop{grid-template-columns:1fr}}
+
+.scoringModal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:9999}
+.scoringCard{background:white;border-radius:18px;padding:24px;max-width:560px;width:100%;box-shadow:0 12px 34px #0004}
+.scoringCard h2{margin-top:0;color:#17365d}.scoreGrid{display:grid;grid-template-columns:1fr auto;gap:8px 18px;margin:14px 0}
+.scoreGrid div{padding:7px 0;border-bottom:1px solid #e5e7eb}.scoreGrid .pts{font-weight:900;text-align:right}
+.levelBonus{background:#eef6ff;border-radius:10px;padding:12px;margin:14px 0;line-height:1.6}
+
+</style></head>
+<body>
+<header><h1>Fluency & Estimation Arcade</h1><p>Addition • Subtraction • Mental Math • Estimation</p></header>
+<main>
+<section class="cards">
+<div class="card active" data-game="blackjack"><h2>Math Blackjack</h2><p>Draw numbers and get as close as possible to the target without going over.</p></div>
+<div class="card" data-game="closest"><h2>Closest Wins</h2><p>Add or subtract available numbers to move toward a target.</p></div>
+<div class="card" data-game="budget"><h2>Budget Challenge</h2><p>Choose realistic purchases and get close to the budget without overspending.</p></div>
+</section>
+<section class="panel">
+<div class="bar"><label><b>Level:</b> <select id="level"><option value="0">Level 1</option><option value="1">Level 2</option><option value="2">Level 3</option></select></label>
+<button id="new">New Round</button><button id="check">Check</button><button id="hint" class="gold">Hint</button><button id="reset" class="alt">Reset</button>
+<button id="scoringBtn" class="alt">Scoring</button><div class="stats"><span>Score: <span id="score">0</span></span><span>Rounds: <span id="rounds">0</span></span></div></div>
+
+<div id="blackjackGame">
+<div class="note"><b>Math Blackjack:</b> Draw number cards. Keep a running total and try to get as close to the target as possible without going over. Choose <b>Hold</b> when you want to stop.</div>
+<div id="bjTarget" class="target"></div><div id="bjHand" class="hand"></div><div id="bjTotal" class="total"></div>
+<div class="buttons"><button id="draw">Draw</button><button id="hold" class="alt">Hold</button></div>
+</div>
+
+<div id="closestGame" class="hidden">
+<div class="note"><b>Closest Wins:</b> Start at 0. Choose a number, then choose + or −. Your goal is to get as close as possible to the target in a limited number of moves.</div>
+<div id="clTarget" class="target"></div><div id="clCurrent" class="number">0</div><div id="clNums" class="hand"></div>
+<div class="buttons"><button id="plus">+ Add</button><button id="minus" class="alt">− Subtract</button></div>
+<div id="clMoves" class="total"></div>
+</div>
+
+<div id="budgetGame" class="hidden">
+<div class="note"><b>Budget Challenge:</b> Select items and estimate your total first. Then use your calculator to find the exact total and type it in. The game will check your math. Try to get as close to the budget as possible without going over.</div>
+<div id="budgetTarget" class="target"></div><div id="shop" class="shop"></div>
+<div class="estimateBox"><label><b>My estimate:</b></label><input id="estimate" inputmode="decimal" placeholder="$"></div>
+<div class="estimateBox"><label><b>My exact total:</b></label><input id="studentTotal" inputmode="decimal" placeholder="$"></div>
+<div id="receipt" class="receipt"></div>
+</div>
+<div id="feedback" class="feedback"></div>
+</section></main>
+
+<div id="scoringModal" class="scoringModal" onclick="if(event.target===this)closeScoring()">
+  <div class="scoringCard">
+    <h2>Arcade Scoring</h2>
+    <div class="scoreGrid">
+      <div><b>Perfect / Correct</b></div><div class="pts">10 points</div>
+      <div><b>Very Close</b> (strategy games)</div><div class="pts">8 points</div>
+      <div><b>Close</b> (strategy games)</div><div class="pts">5 points</div>
+      <div><b>Incorrect / Bust / Over Budget</b></div><div class="pts">0 points</div>
+    </div>
+    <div class="levelBonus"><b>Difficulty Bonus</b><br>
+      Level 1: +0 &nbsp;&nbsp; Level 2: +2 &nbsp;&nbsp; Level 3: +5<br>
+      <small>The bonus is added only when you earn base points.</small>
+    </div>
+    <button onclick="closeScoring()">Close</button>
+  </div>
+</div>
+
+<script>
+let game="blackjack",level=0,score=0,rounds=0;const $=id=>document.getElementById(id),feed=$("feedback");
+
+function levelBonus(){return [0,2,5][level]||0}
+function award(basePoints,label){
+  if(basePoints<=0)return {total:0,bonus:0,text:`${label}: 0 points.`};
+  const bonus=levelBonus(), total=basePoints+bonus;
+  score+=total;
+  return {total,bonus,text:`${label}! ${basePoints} points + ${bonus} Level ${level+1} bonus = ${total} points.`};
+}
+function openScoring(){document.getElementById("scoringModal").style.display="flex"}
+function closeScoring(){document.getElementById("scoringModal").style.display="none"}
+
+function stats(){$("score").textContent=score;$("rounds").textContent=rounds}function fb(s,ok=null){feed.textContent=s;feed.className="feedback "+(ok===true?"good":ok===false?"bad":"")}
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}function money(n){return "$"+n.toFixed(2)}
+document.querySelectorAll(".card").forEach(c=>c.onclick=()=>{document.querySelectorAll(".card").forEach(x=>x.classList.remove("active"));c.classList.add("active");game=c.dataset.game;show();newRound()});
+function show(){["blackjack","closest","budget"].forEach(g=>$(g+"Game").classList.toggle("hidden",g!==game))}
+$("level").onchange=e=>{level=+e.target.value;newRound()};$("new").onclick=newRound;$("reset").onclick=newRound;$("check").onclick=()=>game==="blackjack"?holdBJ():game==="closest"?checkClosest():checkBudget();$("hint").onclick=()=>game==="blackjack"?hintBJ():game==="closest"?hintClosest():hintBudget();
+
+/* blackjack */
+let bjTarget=50,bjHand=[],bjDone=false;
+function loadBJ(){bjTarget=[50,100,250][level];bjHand=[];bjDone=false;$("bjTarget").textContent="Target: "+bjTarget;drawBJ();drawBJ();renderBJ()}
+function drawBJ(){if(bjDone)return;let ranges=[[2,15],[5,30],[10,75]][level];bjHand.push(rand(...ranges));renderBJ();let t=bjHand.reduce((a,b)=>a+b,0);if(t>bjTarget){bjDone=true;rounds++;fb("Bust! Your total went over "+bjTarget+". 0 points.",false);stats()}}
+function renderBJ(){$("bjHand").innerHTML="";bjHand.forEach(n=>{let d=document.createElement("div");d.className="numcard";d.textContent=n;$("bjHand").appendChild(d)});$("bjTotal").textContent="Total: "+bjHand.reduce((a,b)=>a+b,0)}
+function holdBJ(){if(bjDone)return;bjDone=true;let t=bjHand.reduce((a,b)=>a+b,0),diff=bjTarget-t;rounds++;
+let base=diff===0?10:diff<=5?8:diff<=10?5:0;
+if(base>0){let a=award(base,base===10?"Perfect":base===8?"Very Close":"Close");fb(`You held at ${t}. You were ${diff} away. ${a.text}`,true)}
+else fb(`You held at ${t}. You were ${diff} away. 0 points.`,false);stats()}
+function hintBJ(){let t=bjHand.reduce((a,b)=>a+b,0),room=bjTarget-t;fb(`You have ${room} points left before the target. Estimate whether another card is worth the risk.`)}
+$("draw").onclick=drawBJ;$("hold").onclick=holdBJ;
+
+/* closest */
+let clTarget=0,clCurrent=0,clNums=[],clSelected=null,clOp=1,clUsed=0,clMax=4;
+function loadClosest(){clTarget=[50,100,250][level];clCurrent=0;clUsed=0;clMax=[4,5,6][level];clSelected=null;clNums=Array.from({length:6},()=>rand(...[[5,20],[10,40],[15,80]][level]));$("clTarget").textContent="Target: "+clTarget;renderClosest()}
+function renderClosest(){$("clCurrent").textContent=clCurrent;$("clNums").innerHTML="";clNums.forEach((n,i)=>{let d=document.createElement("div");d.className="numcard"+(clSelected===i?" selected":"");d.style.cursor="pointer";d.textContent=n;d.onclick=()=>{clSelected=i;renderClosest()};$("clNums").appendChild(d)});$("clMoves").textContent=`Moves: ${clUsed} of ${clMax}`}
+function applyClosest(op){if(clSelected===null)return fb("Choose a number first.",false);let n=clNums.splice(clSelected,1)[0];clCurrent+=op*n;clUsed++;clSelected=null;renderClosest();if(clUsed>=clMax)checkClosest()}
+$("plus").onclick=()=>applyClosest(1);$("minus").onclick=()=>applyClosest(-1);
+function checkClosest(){let diff=Math.abs(clTarget-clCurrent);rounds++;
+let base=diff===0?10:diff<=5?8:diff<=15?5:0;
+if(base>0){let a=award(base,base===10?"Perfect":base===8?"Very Close":"Close");fb(`You finished at ${clCurrent}, which is ${diff} away. ${a.text}`,true)}
+else fb(`You finished at ${clCurrent}, which is ${diff} away. 0 points.`,false);stats()}
+function hintClosest(){let diff=clTarget-clCurrent;fb(`You need about ${Math.abs(diff)} more. Look for a number that can move you ${diff>=0?"up":"down"} toward the target.`)}
+
+/* budget */
+const names=["Headphones","Hoodie","Phone Case","Backpack","Movie Ticket","Lunch","Water Bottle","Notebook","Sneakers"];
+let budget=100,items=[],selectedItems=new Set();
+function loadBudget(){budget=[50,100,200][level];selectedItems=new Set();$("estimate").value="";$("studentTotal").value="";let ranges=[[4,22],[8,45],[15,85]][level];items=names.slice(0,6).map(n=>({name:n,price:rand(...ranges)+(level===2?[0,.25,.5,.75][rand(0,3)]:0)}));$("budgetTarget").textContent="Budget: "+money(budget);renderShop()}
+function renderShop(){let s=$("shop");s.innerHTML="";items.forEach((it,i)=>{let d=document.createElement("div");d.className="item"+(selectedItems.has(i)?" selected":"");d.innerHTML=`<div class="name">${it.name}</div><div class="price">${money(it.price)}</div>`;d.onclick=()=>{selectedItems.has(i)?selectedItems.delete(i):selectedItems.add(i);renderShop()};s.appendChild(d)});renderReceipt()}
+function renderReceipt(){let r=$("receipt");r.innerHTML="";if(!selectedItems.size){r.innerHTML='<div class="receiptRow"><span>Select items to build your cart.</span><span></span></div>';return;}[...selectedItems].forEach(i=>{let row=document.createElement("div");row.className="receiptRow";row.innerHTML=`<span>${items[i].name}</span><span>${money(items[i].price)}</span>`;r.appendChild(row)});let row=document.createElement("div");row.className="receiptRow totalrow";row.innerHTML='<span>Calculate the total:</span><span>__________</span>';r.appendChild(row)}
+function checkBudget(){
+  if(!selectedItems.size)return fb("Choose at least one item.",false);
+  if($("estimate").value==="")return fb("Enter your estimate before checking.",false);
+  if($("studentTotal").value==="")return fb("Use your calculator, enter your exact total, then check.",false);
+
+  let actual=[...selectedItems].reduce((a,i)=>a+items[i].price,0),
+      est=parseFloat($("estimate").value),
+      entered=parseFloat($("studentTotal").value);
+
+  if(Number.isNaN(entered))return fb("Enter a number for your exact total.",false);
+
+  if(Math.abs(entered-actual)>0.009){
+    rounds++;
+    fb("Your exact total is not correct yet. Recheck the item prices on your calculator. 0 points.",false);
+    stats();
+    return;
+  }
+
+  let estDiff=Math.abs(est-actual);
+  rounds++;
+
+  if(actual>budget){
+    fb(`Your calculation is correct, but the cart is ${money(actual-budget)} over budget. 0 points.`,false);
+  }else{
+    let diff=budget-actual,base=diff===0?10:diff<=5?8:diff<=15?5:0;
+    if(base>0){
+      let a=award(base,base===10?"Perfect":base===8?"Very Close":"Close");
+      fb(`Your exact total is correct. You are ${money(diff)} under budget. Your estimate was ${money(estDiff)} away. ${a.text}`,true);
+    }else{
+      fb(`Your exact total is correct. You are ${money(diff)} under budget, which is too far from the target for points. 0 points.`,false);
+    }
+  }
+  stats();
+}
+function hintBudget(){fb("Hint: Round each selected price for your estimate. Then add the actual prices on your calculator for the exact total.");}
+function newRound(){level=+$("level").value;fb("");if(game==="blackjack")loadBJ();else if(game==="closest")loadClosest();else loadBudget()}
+show();newRound();stats();
+document.getElementById("scoringBtn").onclick=openScoring;
+</script></body></html>

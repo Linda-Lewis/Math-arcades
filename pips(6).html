@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pips Math Arcade</title>
+<style>
+:root{
+  --navy:#17365d; --blue:#2563eb; --green:#178647; --red:#c0392b; --gold:#b7791f;
+  --bg:#eef2f7; --panel:#ffffff; --ink:#17202a; --line:#cbd5e1; --muted:#667085;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(135deg,#e8edf5,#f8fafc);color:var(--ink)}
+header{background:var(--navy);color:white;padding:18px 24px}
+header h1{margin:0;font-size:clamp(28px,4vw,44px)}
+header p{margin:5px 0 0;color:#dbe7f7}
+main{max-width:1180px;margin:auto;padding:18px}
+.panel{background:var(--panel);border-radius:16px;padding:18px;box-shadow:0 8px 22px rgba(0,0,0,.08)}
+.topbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+select,button{font:inherit;padding:10px 13px;border-radius:10px}
+select{border:1px solid var(--line);background:white}
+button{border:none;background:var(--blue);color:white;font-weight:750;cursor:pointer}
+button.alt{background:#64748b} button.gold{background:var(--gold)}
+button:hover{filter:brightness(.97)}
+.gamecards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:18px}
+.gamecard{background:white;border:2px solid transparent;border-radius:16px;padding:18px;cursor:pointer;box-shadow:0 7px 18px #0001}
+.gamecard.active{border-color:var(--blue)}
+.gamecard h2{margin:0 0 6px}.gamecard p{margin:0;color:var(--muted);line-height:1.4}
+.note{margin:14px 0;background:#fff8e7;border-left:6px solid #f4b942;padding:12px 14px;border-radius:10px}
+.hidden{display:none!important}
+.stats{margin-left:auto;font-weight:750;display:flex;gap:18px;flex-wrap:wrap}
+.feedback{font-size:18px;font-weight:800;min-height:28px;margin-top:12px}
+.good{color:var(--green)} .bad{color:var(--red)}
+/* domino */
+.domino{width:112px;height:58px;background:#fff;border:3px solid #202833;border-radius:10px;display:flex;box-shadow:0 4px 10px rgba(0,0,0,.15);cursor:grab;user-select:none}
+.half{flex:1;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:6px}
+.domino .half:first-child{border-right:3px solid #202833}
+.pip{width:9px;height:9px;border-radius:50%;background:#101820;align-self:center;justify-self:center}
+/* challenge */
+#challengeChain{display:flex;align-items:center;gap:0;overflow-x:auto;padding:18px 8px;min-height:130px}
+.slot{width:54px;height:96px;border:2px dashed #a8b3c4;border-radius:8px;margin:0 5px;display:flex;align-items:center;justify-content:center;color:#8a94a6;font-size:12px;flex:none}
+#challengeTray,#logicTray,#cageTray{display:flex;flex-wrap:wrap;gap:12px;min-height:90px}
+/* logic grid */
+.logicLayout{display:grid;grid-template-columns:1.35fr .65fr;gap:18px}
+#logicGrid{display:grid;grid-template-columns:repeat(2,minmax(210px,1fr));gap:14px}
+.zone{border:2px solid #9fb0c5;border-radius:14px;background:#f8fafc;min-height:155px;padding:12px;display:flex;flex-direction:column;gap:9px}
+.zone.goodz{border-color:var(--green);background:#f1fbf5}.zone.badz{border-color:var(--red);background:#fff5f4}
+.clue{font-weight:800;background:white;border:1px solid #d8e0ea;border-radius:9px;padding:8px 10px}
+.drop{flex:1;border:2px dashed #aab7c8;border-radius:10px;display:flex;align-items:center;justify-content:center;min-height:88px;color:#8190a3}
+/* cages */
+.cageLayout{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}
+.boardWrap{display:flex;justify-content:center;overflow:auto;padding:12px}
+#cageBoard{position:relative;display:grid;grid-template-columns:repeat(4,72px);grid-template-rows:repeat(4,72px)}
+.cell{width:72px;height:72px;border:1px solid #dbcfc8;background:#fffaf7}
+.cage{position:absolute;border:3px dashed;border-radius:9px;pointer-events:none;z-index:2;overflow:visible}
+.cageLabel{
+position:absolute;z-index:20;min-width:30px;height:30px;padding:0 5px;
+display:flex;align-items:center;justify-content:center;
+font-size:11px;font-weight:900;line-height:1;color:white;
+background:#334155;border:3px solid white;border-radius:8px;
+box-shadow:0 2px 5px #0004;white-space:nowrap;pointer-events:none;
+transform:rotate(45deg);
+}
+.cageLabel>span{transform:rotate(-45deg);display:block}
+.cageDom{position:absolute;background:#fff;border:2.5px solid #222;border-radius:9px;z-index:5;display:flex;box-shadow:0 2px 5px #0002}
+.cageDom.h{width:136px;height:64px}.cageDom.v{width:64px;height:136px;flex-direction:column}
+.cageDom.h .half:first-child{border-right:2.5px solid #222}.cageDom.v .half:first-child{border-bottom:2.5px solid #222}
+.tile{width:108px;height:54px;background:#fff;border:2.5px solid #222;border-radius:8px;display:flex;cursor:pointer;box-shadow:0 2px 6px #0002}
+.tile.selected{outline:4px solid var(--blue)}
+.tile .half:first-child{border-right:2.5px solid #222}
+@media(max-width:850px){.gamecards{grid-template-columns:1fr}.logicLayout,.cageLayout{grid-template-columns:1fr}.stats{margin-left:0}}
+@media(max-width:600px){#logicGrid{grid-template-columns:1fr}}
+
+.scoringModal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:9999}
+.scoringCard{background:white;border-radius:18px;padding:24px;max-width:560px;width:100%;box-shadow:0 12px 34px #0004}
+.scoringCard h2{margin-top:0;color:#17365d}.scoreGrid{display:grid;grid-template-columns:1fr auto;gap:8px 18px;margin:14px 0}
+.scoreGrid div{padding:7px 0;border-bottom:1px solid #e5e7eb}.scoreGrid .pts{font-weight:900;text-align:right}
+.levelBonus{background:#eef6ff;border-radius:10px;padding:12px;margin:14px 0;line-height:1.6}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>Pips Math Arcade</h1>
+  <p>One link. Three games. Three levels each.</p>
+</header>
+<main>
+<section class="gamecards">
+  <div class="gamecard active" data-game="challenge"><h2>Domino Challenge</h2><p>Match touching pips and build a correct domino chain.</p></div>
+  <div class="gamecard" data-game="logic"><h2>Logic Grid</h2><p>Place dominoes so totals, exact values, and comparison clues are true.</p></div>
+  <div class="gamecard" data-game="cages"><h2>Cages</h2><p>Fit dominoes onto a template and satisfy colored cage rules.</p></div>
+</section>
+
+<section class="panel">
+<div class="topbar">
+  <label><b>Level:</b> <select id="levelSelect"><option value="0">Level 1</option><option value="1">Level 2</option><option value="2">Level 3</option></select></label>
+  <button id="loadLevel">Load Level</button>
+  <button id="checkBtn">Check My Work</button>
+  <button id="hintBtn" class="gold">Hint</button>
+  <button id="resetBtn" class="alt">Reset</button><button id="scoringBtn" class="alt">Scoring</button>
+  <div class="stats"><span>Score: <span id="score">0</span></span><span>Checks/Moves: <span id="moves">0</span></span></div>
+</div>
+
+<div id="challengeGame">
+  <div class="note"><b>Domino Challenge:</b> Drag a domino to the left or right end. Touching pip values must match. Double-click a tile to flip it.</div>
+  <h2>Domino Chain</h2>
+  <div id="challengeChain"></div>
+  <h2>Your Tiles</h2>
+  <div id="challengeTray"></div>
+</div>
+
+<div id="logicGame" class="hidden">
+  <div class="note"><b>Logic Grid:</b> Drag one domino into each clue box. Flip tiles as needed. Every clue must be true.</div>
+  <div class="logicLayout">
+    <div><h2>Challenge Board</h2><div id="logicGrid"></div></div>
+    <aside><h2>Domino Tray</h2><div id="logicTray"></div></aside>
+  </div>
+</div>
+
+<div id="cagesGame" class="hidden">
+  <div class="note"><b>Cages:</b> Select a domino, choose horizontal or vertical, then click a starting square. Cage rules apply to all pips inside the colored region.</div>
+  <div class="cageLayout">
+    <div><h2>Template</h2><div class="boardWrap"><div id="cageBoard"></div></div></div>
+    <aside>
+      <h2>Domino Tray</h2><div id="cageTray"></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="rotateBtn">Rotate (Horizontal)</button><button id="undoBtn" class="alt">Undo</button>
+      </div>
+    </aside>
+  </div>
+</div>
+<div id="feedback" class="feedback"></div>
+</section>
+</main>
+
+
+<div id="scoringModal" class="scoringModal" onclick="if(event.target===this)closeScoring()">
+  <div class="scoringCard">
+    <h2>Arcade Scoring</h2>
+    <div class="scoreGrid">
+      <div><b>Perfect / Correct</b></div><div class="pts">10 points</div>
+      <div><b>Very Close</b> (strategy games)</div><div class="pts">8 points</div>
+      <div><b>Close</b> (strategy games)</div><div class="pts">5 points</div>
+      <div><b>Incorrect</b></div><div class="pts">0 points</div>
+    </div>
+    <div class="levelBonus"><b>Difficulty Bonus</b><br>
+      Level 1: +0 &nbsp;&nbsp; Level 2: +2 &nbsp;&nbsp; Level 3: +5<br>
+      <small>The bonus is added only when you earn base points.</small>
+    </div>
+    <button onclick="closeScoring()">Close</button>
+  </div>
+</div>
+
+<script>
+const P={0:[],1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,3,4,6,7,9],7:[1,3,4,5,6,7,9],8:[1,2,3,4,6,7,8,9],9:[1,2,3,4,5,6,7,8,9]};
+function makeHalf(n){let h=document.createElement("div");h.className="half";for(let i=1;i<=9;i++){let s=document.createElement("span");if(P[n].includes(i))s.className="pip";s.style.gridArea=`${Math.ceil(i/3)} / ${((i-1)%3)+1}`;h.appendChild(s)}return h}
+function makeDomino(t,cls="domino"){let d=document.createElement("div");d.className=cls;d.draggable=true;d.dataset.id=t.id;d.append(makeHalf(t.a),makeHalf(t.b));return d}
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
+let game="challenge",level=0,score=0,moves=0,dragged=null;
+const scoreEl=document.getElementById("score"),movesEl=document.getElementById("moves"),feed=document.getElementById("feedback");
+
+function levelBonus(){return [0,2,5][level]||0}
+function award(basePoints,label){
+  if(basePoints<=0)return {total:0,bonus:0,text:`${label}: 0 points.`};
+  const bonus=levelBonus(), total=basePoints+bonus;
+  score+=total;
+  return {total,bonus,text:`${label}! ${basePoints} points + ${bonus} Level ${level+1} bonus = ${total} points.`};
+}
+function openScoring(){document.getElementById("scoringModal").style.display="flex"}
+function closeScoring(){document.getElementById("scoringModal").style.display="none"}
+
+function setStats(){scoreEl.textContent=score;movesEl.textContent=moves}
+function feedback(msg,ok=null){feed.textContent=msg;feed.className="feedback "+(ok===true?"good":ok===false?"bad":"")}
+document.querySelectorAll(".gamecard").forEach(c=>c.onclick=()=>{document.querySelectorAll(".gamecard").forEach(x=>x.classList.remove("active"));c.classList.add("active");game=c.dataset.game;showGame();loadCurrent()});
+function showGame(){["challenge","logic","cages"].forEach(g=>document.getElementById(g+"Game").classList.toggle("hidden",g!==game))}
+document.getElementById("levelSelect").onchange=e=>level=+e.target.value;
+document.getElementById("loadLevel").onclick=()=>{level=+document.getElementById("levelSelect").value;loadCurrent()};
+document.getElementById("resetBtn").onclick=loadCurrent;
+document.getElementById("checkBtn").onclick=()=> game==="challenge"?checkChallenge():game==="logic"?checkLogic():checkCages();
+document.getElementById("hintBtn").onclick=()=> game==="challenge"?hintChallenge():game==="logic"?hintLogic():hintCages();
+
+/* CHALLENGE */
+let chHand=[],chChain=[];
+function challengeHand(maxPips,count){let a=[],cur=Math.floor(Math.random()*(maxPips+1));for(let i=0;i<count;i++){let n=Math.floor(Math.random()*(maxPips+1));a.push({id:"c"+i,a:cur,b:n});cur=n}shuffle(a);return a}
+function loadChallenge(){score=0;moves=0;chChain=[];chHand=challengeHand([4,6,9][level],[8,10,12][level]);renderChallenge();setStats();feedback("")}
+function renderChallenge(){let c=document.getElementById("challengeChain");c.innerHTML="";function slot(side){let s=document.createElement("div");s.className="slot";s.textContent=side.toUpperCase();s.ondragover=e=>e.preventDefault();s.ondrop=e=>{e.preventDefault();placeChallenge(dragged,side)};return s}
+if(!chChain.length)c.appendChild(slot("start"));else{c.appendChild(slot("left"));chChain.forEach(t=>c.appendChild(makeDomino(t)));c.appendChild(slot("right"))}
+let tr=document.getElementById("challengeTray");tr.innerHTML="";chHand.forEach(t=>{let d=makeDomino(t);d.ondragstart=()=>dragged=t.id;d.ondblclick=()=>{[t.a,t.b]=[t.b,t.a];renderChallenge()};tr.appendChild(d)})}
+function placeChallenge(id,side){let i=chHand.findIndex(t=>t.id===id);if(i<0)return;let t=chHand[i],ok=false;moves++;
+if(!chChain.length)ok=true;else if(side==="right"){let n=chChain[chChain.length-1].b;if(t.a===n)ok=true;else if(t.b===n){[t.a,t.b]=[t.b,t.a];ok=true}}
+else if(side==="left"){let n=chChain[0].a;if(t.b===n)ok=true;else if(t.a===n){[t.a,t.b]=[t.b,t.a];ok=true}}
+if(ok){chHand.splice(i,1);side==="left"?chChain.unshift(t):chChain.push(t);let a=award(10,"Correct");feedback(`Correct match! ${a.text}`,true)}else{feedback("Not a match. Check the touching pips. 0 points.",false)}
+renderChallenge();setStats();if(!chHand.length)feedback("Level complete!",true)}
+function checkChallenge(){moves++;setStats();feedback(chHand.length?"Keep building the chain.":"Level complete!",!chHand.length)}
+function hintChallenge(){if(!chChain.length)return feedback("Any tile can start the chain.");let L=chChain[0].a,R=chChain[chChain.length-1].b;let t=chHand.find(x=>[x.a,x.b].includes(L)||[x.a,x.b].includes(R));feedback(t?`Try ${t.a} | ${t.b}. It can match ${L} or ${R}.`:"No match found.")}
+
+/* LOGIC */
+const logicLevels=[
+ {zones:[["Total = 5",(a,b)=>a+b===5],["Left = 2",(a,b)=>a===2],["Total > 8",(a,b)=>a+b>8],["Total < 4",(a,b)=>a+b<4],["Left = Right",(a,b)=>a===b],["Right = 6",(a,b)=>b===6]],tiles:[[2,3],[2,5],[4,5],[0,2],[4,4],[1,6]]},
+ {zones:[["Left < Right",(a,b)=>a<b],["Total = 8",(a,b)=>a+b===8],["Left > Right",(a,b)=>a>b],["Total > 9",(a,b)=>a+b>9],["Total < 5",(a,b)=>a+b<5],["Left = 3",(a,b)=>a===3]],tiles:[[1,5],[2,6],[6,2],[5,6],[1,2],[3,4]]},
+ {zones:[["Total = 10",(a,b)=>a+b===10],["Right < Left",(a,b)=>b<a],["Right = 4",(a,b)=>b===4],["Total = 6",(a,b)=>a+b===6],["Left = Right",(a,b)=>a===b],["Total > 11",(a,b)=>a+b>11]],tiles:[[4,6],[6,1],[2,4],[1,5],[3,3],[6,7]]}
+];
+let loTray=[],loPlaced={};
+function loadLogic(){score=0;moves=0;loPlaced={};loTray=logicLevels[level].tiles.map((x,i)=>({id:"l"+i,a:x[0],b:x[1]}));shuffle(loTray);renderLogic();setStats();feedback("")}
+function renderLogic(){let g=document.getElementById("logicGrid");g.innerHTML="";logicLevels[level].zones.forEach((z,i)=>{let q=document.createElement("div");q.className="zone";q.dataset.i=i;let c=document.createElement("div");c.className="clue";c.textContent=z[0];let d=document.createElement("div");d.className="drop";d.ondragover=e=>e.preventDefault();d.ondrop=e=>{e.preventDefault();placeLogic(dragged,i)};if(loPlaced[i]){let dm=makeDomino(loPlaced[i]);dm.ondblclick=()=>{[loPlaced[i].a,loPlaced[i].b]=[loPlaced[i].b,loPlaced[i].a];renderLogic()};d.appendChild(dm)}else d.textContent="DROP DOMINO";q.append(c,d);g.appendChild(q)});
+let tr=document.getElementById("logicTray");tr.innerHTML="";loTray.forEach(t=>{let dm=makeDomino(t);dm.ondragstart=()=>dragged=t.id;dm.ondblclick=()=>{[t.a,t.b]=[t.b,t.a];renderLogic()};tr.appendChild(dm)})}
+function removeLogic(id){let j=loTray.findIndex(t=>t.id===id);if(j>=0)return loTray.splice(j,1)[0];for(let k in loPlaced)if(loPlaced[k].id===id){let t=loPlaced[k];delete loPlaced[k];return t}}
+function placeLogic(id,i){let t=removeLogic(id);if(!t)return;if(loPlaced[i])loTray.push(loPlaced[i]);loPlaced[i]=t;moves++;renderLogic();setStats()}
+function checkLogic(){moves++;let all=true;document.querySelectorAll("#logicGrid .zone").forEach((e,i)=>{e.classList.remove("goodz","badz");let t=loPlaced[i],ok=t&&logicLevels[level].zones[i][1](t.a,t.b);e.classList.add(ok?"goodz":"badz");if(!ok)all=false});if(all){let a=award(10,"Correct");feedback(`Puzzle solved! Every clue is true. ${a.text}`,true)}else feedback("Red boxes need another look. 0 points.",false);setStats()}
+function hintLogic(){for(let i=0;i<logicLevels[level].zones.length;i++){let z=logicLevels[level].zones[i],cur=loPlaced[i];if(cur&&z[1](cur.a,cur.b))continue;let cand=[...loTray,...Object.values(loPlaced)];let t=cand.find(x=>z[1](x.a,x.b)||z[1](x.b,x.a));if(t)return feedback(`Hint: For "${z[0]}", try ${z[1](t.a,t.b)?t.a+" | "+t.b:t.b+" | "+t.a}.`)}}
+
+/* CAGES */
+function sum(a){return a.reduce((x,y)=>x+y,0)} function allEq(a){return a.length&&a.every(x=>x===a[0])}
+const cageLevels=[
+ {cages:[
+  {r:0,c:0,w:2,h:1,b:"#7b4db1",f:"#b58bd0",label:"5",kind:"sum",rule:v=>sum(v)===5},
+  {r:0,c:2,w:1,h:1,b:"#e22670",f:"#f29ab1",label:"4",kind:"single",rule:v=>v[0]===4},
+  {r:0,c:3,w:1,h:1,b:"#087d8d",f:"#76c4cc",label:"1",kind:"single",rule:v=>v[0]===1},
+  {r:1,c:0,w:1,h:1,b:"#d95d00",f:"#f4b274",label:"3",kind:"single",rule:v=>v[0]===3},
+  {r:1,c:1,w:2,h:1,b:"#365a9f",f:"#8fa5d6",label:"6",kind:"sum",rule:v=>sum(v)===6},
+  {r:1,c:3,w:1,h:1,b:"#6aa84f",f:"#b6d7a8",label:"2",kind:"single",rule:v=>v[0]===2},
+  {r:2,c:0,w:2,h:1,b:"#c98e78",f:"#efd0c4",label:"4",kind:"sum",rule:v=>sum(v)===4},
+  {r:2,c:2,w:2,h:1,b:"#8e44ad",f:"#d7bde2",label:"7",kind:"sum",rule:v=>sum(v)===7},
+  {r:3,c:0,w:1,h:1,b:"#2980b9",f:"#aed6f1",label:"0",kind:"single",rule:v=>v[0]===0},
+  {r:3,c:1,w:1,h:1,b:"#16a085",f:"#a3e4d7",label:"5",kind:"single",rule:v=>v[0]===5},
+  {r:3,c:2,w:2,h:1,b:"#b9770e",f:"#f9e79f",label:"8",kind:"sum",rule:v=>sum(v)===8}
+ ],tiles:[[2,3],[4,1],[3,2],[4,2],[1,3],[5,0],[3,5],[2,5]]},
+
+ {cages:[
+  {r:0,c:0,w:2,h:1,b:"#7b4db1",f:"#b58bd0",label:"6",kind:"sum",rule:v=>sum(v)===6},
+  {r:0,c:2,w:2,h:1,b:"#e22670",f:"#f29ab1",label:"=",kind:"equal",rule:v=>allEq(v)},
+  {r:1,c:0,w:1,h:1,b:"#087d8d",f:"#76c4cc",label:"5",kind:"single",rule:v=>v[0]===5},
+  {r:1,c:1,w:1,h:1,b:"#d95d00",f:"#f4b274",label:"2",kind:"single",rule:v=>v[0]===2},
+  {r:1,c:2,w:2,h:1,b:"#365a9f",f:"#8fa5d6",label:"7",kind:"sum",rule:v=>sum(v)===7},
+  {r:2,c:0,w:2,h:1,b:"#c98e78",f:"#efd0c4",label:"=",kind:"equal",rule:v=>allEq(v)},
+  {r:2,c:2,w:1,h:1,b:"#6aa84f",f:"#b6d7a8",label:"4",kind:"single",rule:v=>v[0]===4},
+  {r:2,c:3,w:1,h:1,b:"#8e44ad",f:"#d7bde2",label:"1",kind:"single",rule:v=>v[0]===1},
+  {r:3,c:0,w:2,h:1,b:"#2980b9",f:"#aed6f1",label:"5",kind:"sum",rule:v=>sum(v)===5},
+  {r:3,c:2,w:2,h:1,b:"#16a085",f:"#a3e4d7",label:"=",kind:"equal",rule:v=>allEq(v)}
+ ],tiles:[[2,4],[3,3],[5,2],[3,4],[1,1],[4,4],[2,3],[2,2]]},
+
+ {cages:[
+  {r:0,c:0,w:2,h:1,b:"#7b4db1",f:"#b58bd0",label:"7",kind:"sum",rule:v=>sum(v)===7},
+  {r:0,c:2,w:2,h:1,b:"#e22670",f:"#f29ab1",label:"=",kind:"equal",rule:v=>allEq(v)},
+  {r:1,c:0,w:1,h:1,b:"#087d8d",f:"#76c4cc",label:"6",kind:"single",rule:v=>v[0]===6},
+  {r:1,c:1,w:1,h:1,b:"#d95d00",f:"#f4b274",label:"2",kind:"single",rule:v=>v[0]===2},
+  {r:1,c:2,w:2,h:1,b:"#365a9f",f:"#8fa5d6",label:"> 6",kind:"gt",rule:v=>sum(v)>6},
+  {r:2,c:0,w:2,h:1,b:"#c98e78",f:"#efd0c4",label:"< 5",kind:"lt",rule:v=>sum(v)<5},
+  {r:2,c:2,w:1,h:1,b:"#6aa84f",f:"#b6d7a8",label:"4",kind:"single",rule:v=>v[0]===4},
+  {r:2,c:3,w:1,h:1,b:"#8e44ad",f:"#d7bde2",label:"1",kind:"single",rule:v=>v[0]===1},
+  {r:3,c:0,w:2,h:1,b:"#2980b9",f:"#aed6f1",label:"8",kind:"sum",rule:v=>sum(v)===8},
+  {r:3,c:2,w:2,h:1,b:"#16a085",f:"#a3e4d7",label:"=",kind:"equal",rule:v=>allEq(v)}
+ ],tiles:[[3,4],[5,5],[6,2],[4,3],[1,3],[4,1],[2,6],[2,2]]}
+];
+let caTray=[],caPlaced=[],caSelected=null,caOrient="h";
+function loadCages(){score=0;moves=0;caPlaced=[];caSelected=null;caOrient="h";document.getElementById("rotateBtn").textContent="Rotate (Horizontal)";caTray=cageLevels[level].tiles.map((x,i)=>({id:"g"+i,a:x[0],b:x[1]}));renderCages();setStats();feedback("")}
+function renderCages(){let b=document.getElementById("cageBoard");b.innerHTML="";for(let r=0;r<4;r++)for(let c=0;c<4;c++){let x=document.createElement("div");x.className="cell";x.onclick=()=>placeCage(r,c);b.appendChild(x)}
+cageLevels[level].cages.forEach(cg=>{
+ let d=document.createElement("div");d.className="cage";
+ d.style.left=(cg.c*72+4)+"px";d.style.top=(cg.r*72+4)+"px";
+ d.style.width=(cg.w*72-8)+"px";d.style.height=(cg.h*72-8)+"px";
+ d.style.borderColor=cg.b;d.style.background=cg.f+"55";
+ let l=document.createElement("div");l.className="cageLabel";l.style.background=cg.b;
+ let sp=document.createElement("span");sp.textContent=cg.label;l.appendChild(sp);
+ // Put the badge just outside a cage edge, never in the domino space.
+ // Alternate left/right edges to prevent neighboring badges from overlapping.
+ if(cg.c+cg.w>=4){l.style.right="-19px";l.style.top="6px";}
+ else if(cg.c===0){l.style.left="-19px";l.style.top="6px";}
+ else {l.style.right="-19px";l.style.bottom="6px";}
+ d.appendChild(l);b.appendChild(d)
+});
+caPlaced.forEach(p=>{let d=document.createElement("div");d.className="cageDom "+p.o;d.style.left=(p.c*72+4)+"px";d.style.top=(p.r*72+4)+"px";d.append(makeHalf(p.a),makeHalf(p.b));b.appendChild(d)});
+let tr=document.getElementById("cageTray");tr.innerHTML="";caTray.filter(t=>!caPlaced.some(p=>p.id===t.id)).forEach(t=>{let d=document.createElement("div");d.className="tile"+(caSelected===t.id?" selected":"");d.append(makeHalf(t.a),makeHalf(t.b));d.onclick=()=>{caSelected=t.id;renderCages()};tr.appendChild(d)})}
+function occ(p){return p.o==="h"?[[p.r,p.c],[p.r,p.c+1]]:[[p.r,p.c],[p.r+1,p.c]]}
+function used(r,c){return caPlaced.some(p=>occ(p).some(x=>x[0]===r&&x[1]===c))}
+function placeCage(r,c){if(caSelected===null)return feedback("Select a domino first.",false);let t=caTray.find(x=>x.id===caSelected);let cells=caOrient==="h"?[[r,c],[r,c+1]]:[[r,c],[r+1,c]];if(cells.some(x=>x[0]>3||x[1]>3||used(x[0],x[1])))return feedback("That domino does not fit there.",false);caPlaced.push({id:t.id,a:t.a,b:t.b,r,c,o:caOrient});caSelected=null;moves++;renderCages();setStats()}
+function cellVal(r,c){for(let p of caPlaced){let cells=occ(p);if(cells[0][0]===r&&cells[0][1]===c)return p.a;if(cells[1][0]===r&&cells[1][1]===c)return p.b}return null}
+function cageVals(cg){let v=[];for(let r=cg.r;r<cg.r+cg.h;r++)for(let c=cg.c;c<cg.c+cg.w;c++){let n=cellVal(r,c);if(n!==null)v.push(n)}return v}
+function checkCages(){moves++;if(caPlaced.length<8){setStats();return feedback("Place all 8 dominoes before checking.",false)}let all=true,fail=[];for(let cg of cageLevels[level].cages){let v=cageVals(cg);if(v.length!==cg.w*cg.h||!cg.rule(v)){all=false;fail.push(cg.label)}}if(all){let a=award(10,"Correct");feedback(`Puzzle solved! Every cage rule is true. ${a.text}`,true)}else feedback("Recheck: "+[...new Set(fail)].join(", ")+" — 0 points.",false);setStats()}
+function hintCages(){for(let cg of cageLevels[level].cages){let v=cageVals(cg);if(v.length===cg.w*cg.h&&!cg.rule(v))return feedback("Hint: Look again at the "+cg.label+" cage.")}feedback("Hint: Start with single-number cages, then two-square total cages and = cages.")}
+document.getElementById("rotateBtn").onclick=()=>{caOrient=caOrient==="h"?"v":"h";document.getElementById("rotateBtn").textContent="Rotate ("+(caOrient==="h"?"Horizontal":"Vertical")+")"};
+document.getElementById("undoBtn").onclick=()=>{caPlaced.pop();renderCages()};
+
+function loadCurrent(){level=+document.getElementById("levelSelect").value;if(game==="challenge")loadChallenge();else if(game==="logic")loadLogic();else loadCages()}
+showGame();loadCurrent();
+document.getElementById("scoringBtn").onclick=openScoring;
+</script>
+</body>
+</html>
