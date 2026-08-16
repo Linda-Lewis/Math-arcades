@@ -5,19 +5,61 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Math Arcade</title>
 <style>
-:root{--navy:#17365d;--blue:#2563eb;--bg:#eef2f7;--ink:#17202a;--muted:#667085}
+:root{
+  --navy:#17365d; --blue:#2563eb; --bg:#eef2f7; --ink:#17202a;
+  --muted:#667085; --gold:#f4b942;
+}
 *{box-sizing:border-box}
-body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(135deg,#e8edf5,#f8fafc);color:var(--ink)}
-header{background:var(--navy);color:white;padding:28px 24px;text-align:center}
-header h1{margin:0;font-size:clamp(32px,5vw,52px)}
+body{
+  margin:0;
+  font-family:Inter,Segoe UI,Arial,sans-serif;
+  background:linear-gradient(135deg,#e8edf5,#f8fafc);
+  color:var(--ink)
+}
+header{
+  background:var(--navy);
+  color:white;
+  padding:30px 24px;
+  text-align:center
+}
+header h1{margin:0;font-size:clamp(34px,5vw,54px)}
 header p{margin:8px 0 0;color:#dbe7f7;font-size:18px}
-main{max-width:1050px;margin:auto;padding:24px}
-.note{background:#fff8e7;border-left:6px solid #f4b942;border-radius:12px;padding:14px 16px;margin-bottom:20px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
-a.card{display:block;background:white;border:2px solid transparent;border-radius:18px;padding:22px;text-decoration:none;color:var(--ink);box-shadow:0 8px 22px #0002;transition:.15s}
-a.card:hover{transform:translateY(-2px);border-color:var(--blue)}
-.card h2{margin:0 0 8px}.card p{margin:0;color:var(--muted);line-height:1.45}
-footer{text-align:center;color:var(--muted);padding:28px 18px}
+main{max-width:1080px;margin:auto;padding:26px}
+.note{
+  background:#fff8e7;
+  border-left:6px solid var(--gold);
+  border-radius:12px;
+  padding:14px 16px;
+  margin-bottom:22px;
+  line-height:1.45
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:18px
+}
+a.card{
+  display:block;
+  background:white;
+  border:2px solid transparent;
+  border-radius:18px;
+  padding:22px;
+  text-decoration:none;
+  color:var(--ink);
+  box-shadow:0 8px 22px #0002;
+  transition:.15s
+}
+a.card:hover{
+  transform:translateY(-2px);
+  border-color:var(--blue)
+}
+.card h2{margin:0 0 8px}
+.card p{margin:0;color:var(--muted);line-height:1.45}
+footer{
+  text-align:center;
+  color:var(--muted);
+  padding:26px 18px
+}
 </style>
 </head>
 <body>
@@ -26,30 +68,38 @@ footer{text-align:center;color:var(--muted);padding:28px 18px}
   <p>Choose a game and start playing.</p>
 </header>
 <main>
-  <div class="note"><b>Scoring:</b> All arcades use the same scoring system. Correct/Perfect = 10 points, Very Close = 8, Close = 5, Incorrect = 0. Level 2 adds +2 and Level 3 adds +5 when points are earned.</div>
+  <div class="note">
+    <b>Scoring:</b> Correct/Perfect = 10 points, Very Close = 8, Close = 5, Incorrect = 0.
+    Level 2 adds +2 and Level 3 adds +5 when points are earned.
+  </div>
+
   <div class="grid">
     <a class="card" href="pips.html">
       <h2>Pips Math Arcade</h2>
       <p>Domino Challenge • Logic Grid • Cages</p>
     </a>
+
     <a class="card" href="place-value.html">
       <h2>Place Value Arcade</h2>
       <p>Number Builder • Crack the Code • Target Number</p>
     </a>
+
     <a class="card" href="fluency.html">
       <h2>Fluency & Estimation Arcade</h2>
       <p>Math Blackjack • Closest Wins • Budget Challenge</p>
     </a>
+
     <a class="card" href="multiplication.html">
       <h2>Multiplication & Division Arcade</h2>
       <p>Equal Groups • Fact Family Challenge • Product Quest</p>
     </a>
+
     <a class="card" href="integers.html">
       <h2>Integer Arcade</h2>
       <p>Integer War • Elevator Challenge • Zero Showdown</p>
     </a>
   </div>
 </main>
-<footer>Math Arcade • Open directly in Chrome from your published GitHub Pages site.</footer>
+<footer>Math Arcade</footer>
 </body>
 </html>
