@@ -213,29 +213,30 @@ function newCode(){
   codeAnswer=Array.from({length:count},()=>Math.floor(Math.random()*10));
   if(codeAnswer[0]===0)codeAnswer[0]=Math.floor(Math.random()*9)+1;
   let names=placesForLevel(), clues=[];
+
   if(level===0){
     clues=codeAnswer.map((d,i)=>`The ${names[i].toLowerCase()} digit is ${d}.`);
   }else if(level===1){
-    clues=[
-      `The ${names[0].toLowerCase()} digit is ${codeAnswer[0]}.`,
-      `The ${names[1].toLowerCase()} digit is ${codeAnswer[1]}.`,
-      `The ${names[2].toLowerCase()} digit is ${codeAnswer[2]}.`,
-      `The ${names[3].toLowerCase()} digit is ${codeAnswer[3]}.`
-    ];
+    clues=codeAnswer.map((d,i)=>`The ${names[i].toLowerCase()} digit is ${d}.`);
     shuffle(clues);
   }else{
-    let a=codeAnswer;
-    clues=[
-      `The thousands digit is ${a[0]}.`,
-      `The hundreds digit is ${a[1]===0?"zero":a[1]}.`,
-      `The tens digit is ${a[2]}.`,
-      `The ones digit is ${a[3]}.`,
-      `The value of the thousands digit is ${a[0]*1000}.`,
-      `The value of the tens digit is ${a[2]*10}.`
-    ];
-    shuffle(clues);clues=clues.slice(0,4);
+    // Level 3: exactly one clue for each place value.
+    const values=[1000,100,10,1];
+    clues=codeAnswer.map((d,i)=>{
+      const place=names[i].toLowerCase();
+      if(d===0) return `The ${place} digit is 0.`;
+      const options=[
+        `The ${place} digit is ${d}.`,
+        `The digit in the ${place} place is ${d}.`,
+        `The value of the ${place} digit is ${(d*values[i]).toLocaleString("en-US")}.`
+      ];
+      return options[Math.floor(Math.random()*options.length)];
+    });
+    shuffle(clues);
   }
-  codeClues=clues;renderCode();
+
+  codeClues=clues;
+  renderCode();
 }
 function renderCode(){
   let c=document.getElementById("codeClues");c.innerHTML="";
