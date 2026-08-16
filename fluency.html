@@ -58,9 +58,10 @@ select{border:1px solid var(--line);background:#fff}button{border:0;background:v
 </div>
 
 <div id="budgetGame" class="hidden">
-<div class="note"><b>Budget Challenge:</b> Select items and estimate your total first. Then calculate the exact total. Try to get as close to the budget as possible without going over.</div>
+<div class="note"><b>Budget Challenge:</b> Select items and estimate your total first. Then use your calculator to find the exact total and type it in. The game will check your math. Try to get as close to the budget as possible without going over.</div>
 <div id="budgetTarget" class="target"></div><div id="shop" class="shop"></div>
 <div class="estimateBox"><label><b>My estimate:</b></label><input id="estimate" inputmode="decimal" placeholder="$"></div>
+<div class="estimateBox"><label><b>My exact total:</b></label><input id="studentTotal" inputmode="decimal" placeholder="$"></div>
 <div id="receipt" class="receipt"></div>
 </div>
 <div id="feedback" class="feedback"></div>
@@ -129,16 +130,44 @@ function hintClosest(){let diff=clTarget-clCurrent;fb(`You need about ${Math.abs
 /* budget */
 const names=["Headphones","Hoodie","Phone Case","Backpack","Movie Ticket","Lunch","Water Bottle","Notebook","Sneakers"];
 let budget=100,items=[],selectedItems=new Set();
-function loadBudget(){budget=[50,100,200][level];selectedItems=new Set();$("estimate").value="";let ranges=[[4,22],[8,45],[15,85]][level];items=names.slice(0,6).map(n=>({name:n,price:rand(...ranges)+(level===2?[0,.25,.5,.75][rand(0,3)]:0)}));$("budgetTarget").textContent="Budget: "+money(budget);renderShop()}
+function loadBudget(){budget=[50,100,200][level];selectedItems=new Set();$("estimate").value="";$("studentTotal").value="";let ranges=[[4,22],[8,45],[15,85]][level];items=names.slice(0,6).map(n=>({name:n,price:rand(...ranges)+(level===2?[0,.25,.5,.75][rand(0,3)]:0)}));$("budgetTarget").textContent="Budget: "+money(budget);renderShop()}
 function renderShop(){let s=$("shop");s.innerHTML="";items.forEach((it,i)=>{let d=document.createElement("div");d.className="item"+(selectedItems.has(i)?" selected":"");d.innerHTML=`<div class="name">${it.name}</div><div class="price">${money(it.price)}</div>`;d.onclick=()=>{selectedItems.has(i)?selectedItems.delete(i):selectedItems.add(i);renderShop()};s.appendChild(d)});renderReceipt()}
-function renderReceipt(){let r=$("receipt"),total=[...selectedItems].reduce((a,i)=>a+items[i].price,0);r.innerHTML="";[...selectedItems].forEach(i=>{let row=document.createElement("div");row.className="receiptRow";row.innerHTML=`<span>${items[i].name}</span><span>${money(items[i].price)}</span>`;r.appendChild(row)});let row=document.createElement("div");row.className="receiptRow totalrow";row.innerHTML=`<span>Exact Total</span><span>${money(total)}</span>`;r.appendChild(row)}
-function checkBudget(){if(!selectedItems.size)return fb("Choose at least one item.",false);if($("estimate").value==="")return fb("Enter your estimate before checking.",false);
-let total=[...selectedItems].reduce((a,i)=>a+items[i].price,0),est=parseFloat($("estimate").value),estDiff=Math.abs(est-total);rounds++;
-if(total>budget){fb(`Your exact total is ${money(total)}. That is ${money(total-budget)} over budget. 0 points.`,false)}
-else{let diff=budget-total,base=diff===0?10:diff<=5?8:diff<=15?5:0;
-if(base>0){let a=award(base,base===10?"Perfect":base===8?"Very Close":"Close");fb(`Exact total: ${money(total)}. You are ${money(diff)} under budget. Your estimate was ${money(estDiff)} away. ${a.text}`,true)}
-else fb(`Exact total: ${money(total)}. You are ${money(diff)} under budget. 0 points.`,false)}stats()}
-function hintBudget(){let total=[...selectedItems].reduce((a,i)=>a+items[i].price,0);fb(`Current exact total is ${money(total)}. About ${money(Math.max(0,budget-total))} remains.`)}
+function renderReceipt(){let r=$("receipt");r.innerHTML="";if(!selectedItems.size){r.innerHTML='<div class="receiptRow"><span>Select items to build your cart.</span><span></span></div>';return;}[...selectedItems].forEach(i=>{let row=document.createElement("div");row.className="receiptRow";row.innerHTML=`<span>${items[i].name}</span><span>${money(items[i].price)}</span>`;r.appendChild(row)});let row=document.createElement("div");row.className="receiptRow totalrow";row.innerHTML='<span>Calculate the total:</span><span>__________</span>';r.appendChild(row)}
+function checkBudget(){
+  if(!selectedItems.size)return fb("Choose at least one item.",false);
+  if($("estimate").value==="")return fb("Enter your estimate before checking.",false);
+  if($("studentTotal").value==="")return fb("Use your calculator, enter your exact total, then check.",false);
+
+  let actual=[...selectedItems].reduce((a,i)=>a+items[i].price,0),
+      est=parseFloat($("estimate").value),
+      entered=parseFloat($("studentTotal").value);
+
+  if(Number.isNaN(entered))return fb("Enter a number for your exact total.",false);
+
+  if(Math.abs(entered-actual)>0.009){
+    rounds++;
+    fb("Your exact total is not correct yet. Recheck the item prices on your calculator. 0 points.",false);
+    stats();
+    return;
+  }
+
+  let estDiff=Math.abs(est-actual);
+  rounds++;
+
+  if(actual>budget){
+    fb(`Your calculation is correct, but the cart is ${money(actual-budget)} over budget. 0 points.`,false);
+  }else{
+    let diff=budget-actual,base=diff===0?10:diff<=5?8:diff<=15?5:0;
+    if(base>0){
+      let a=award(base,base===10?"Perfect":base===8?"Very Close":"Close");
+      fb(`Your exact total is correct. You are ${money(diff)} under budget. Your estimate was ${money(estDiff)} away. ${a.text}`,true);
+    }else{
+      fb(`Your exact total is correct. You are ${money(diff)} under budget, which is too far from the target for points. 0 points.`,false);
+    }
+  }
+  stats();
+}
+function hintBudget(){fb("Hint: Round each selected price for your estimate. Then add the actual prices on your calculator for the exact total.");}
 function newRound(){level=+$("level").value;fb("");if(game==="blackjack")loadBJ();else if(game==="closest")loadClosest();else loadBudget()}
 show();newRound();stats();
 document.getElementById("scoringBtn").onclick=openScoring;
